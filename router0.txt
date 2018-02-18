@@ -1,0 +1,52 @@
+Router>en
+Router#conf t
+
+Router(config)#int fa0/0
+Router(config-if)#no shutdown 
+Router(config-if)#exit
+
+Router(config)#int fa0/0.2
+Router(config-subif)#encapsulation dot1Q 2
+Router(config-subif)#ip address 192.168.2.1 255.255.255.0
+Router(config-subif)#no shutdown 
+Router(config-subif)#exit
+
+Router(config)#int fa0/0.3
+Router(config-subif)#encapsulation dot1Q 3
+Router(config-subif)#ip address 192.168.3.1 255.255.255.0
+Router(config-subif)#no shutdown 
+Router(config-subif)#exit
+
+Router(config)#int fa0/1
+Router(config-if)#ip address 213.234.10.2 255.255.255.252
+Router(config-if)#end
+
+Router(config)#int fa0/1
+Router(config-if)#no shutdown 
+Router(config-if)#exit
+
+Router(config)#ip route 0.0.0.0 0.0.0.0 213.234.10.1
+
+Router(config)#int fa0/1
+Router(config-if)#ip nat outside 
+Router(config-if)#exit
+
+Router(config)#int fa0/0.2
+Router(config-subif)#ip nat inside 
+Router(config-subif)#exit
+
+Router(config)#int fa0/0.3
+Router(config-subif)#ip nat inside 
+Router(config-subif)#exit
+
+//Настройка PAT
+Router(config)#ip access-list standard FOR-NAT
+Router(config-std-nacl)#permit 192.168.2.0 0.0.0.255
+Router(config-std-nacl)#permit 192.168.3.0 0.0.0.255
+Router(config-std-nacl)#end
+
+Router(config)#ip nat inside source list FOR-NAT interface fastEthernet 0/1 overload 
+
+//Настройка Static NAT
+Router(config)#ip nat inside source static tcp 192.168.3.2 80 213.234.10.2 80
+
